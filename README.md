@@ -2,6 +2,15 @@
 	*	Purpose
 		* It's a bare-metal study in QEMU (-M virt -cpu cortex-a57)
 
+	*	GDB (Terminal 1/2 should be in the same directory.)
+	```
+	Terminal 1:
+		qemu-system-aarch64 -machine virt -cpu cortex-a57 -kernel kernel.elf -nographic -S -s
+	Terminal 2:
+		aarch64-linux-gnu-gdb kernel.elf
+		target remote :1234
+	```
+
 # Reference
 *	Project
 	*   [aarch64-bare-metal-qemu]( https://github.com/freedomtan/aarch64-bare-metal-qemu)
