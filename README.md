@@ -1,8 +1,8 @@
 # armv8-bare-metal
-	*	Purpose
-		* It's a bare-metal study in QEMU (-M virt -cpu cortex-a57)
+*	Purpose
+	* It's a bare-metal study in QEMU (-M virt -cpu cortex-a57)
 
-	*	GDB (Terminal 1/2 should be in the same directory.)
+*	GDB (Terminal 1/2 should be in the same directory.)
 	```
 	Terminal 1:
 		qemu-system-aarch64 -machine virt -cpu cortex-a57 -kernel kernel.elf -nographic -S -s
