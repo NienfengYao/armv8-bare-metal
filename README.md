@@ -7,7 +7,7 @@
 	Terminal 1:
 		qemu-system-aarch64 -machine virt -cpu cortex-a57 -kernel kernel.elf -nographic -S -s
 	Terminal 2:
-		aarch64-linux-gnu-gdb kernel.elf
+		aarch64-linux-gnu-gdb kernel.elf tui
 		target remote :1234
 	```
 

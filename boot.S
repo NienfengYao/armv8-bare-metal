@@ -11,6 +11,8 @@ _start:
 boot_cpu:
 	/* configure stack */
 	adrp	x0,	stack_top	// Address of 4KB page at a PC-relative offset
+
+main_label:					// Why we need this label let GDB step into main()?
 	mov		sp, x0			// sp = stack_top (align with 4KB page)
 	bl		main
 
