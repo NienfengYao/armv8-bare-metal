@@ -13,10 +13,11 @@
 
 # Questions
 *	GDB can't step into main() if miss lable: main_label in boot.S (commit b72c6a8cc7033a4fed89b57f75826d201466179f)
-*	It should be some problems in vector_table_el1 in boot.S. If I set "b hang" in other vectors except lower_el_aarch64_irq, the uart outpt will be incorrect (commit b72c6a8cc7033a4fed89b57f75826d201466179f)
 *	Debug Timer IRQ (commit b72c6a8cc7033a4fed89b57f75826d201466179f)
 	*	We can see CNTV_CTL_EL0[2]:ISTATUS changes, but irq_handler doesn't be called.
 	*	And we also didn't see any changes in ISR_EL1. 
+	*	(Fixed) It should be some problems in vector_table_el1 in boot.S. If I set "b hang" in other vectors except lower_el_aarch64_irq, the uart outpt will be incorrect (commit b72c6a8cc7033a4fed89b57f75826d201466179f)
+		*	Root cause should be the stack memory is overlaid. Now, we set stack_top = 0x41000000 to avoid it. (commit c14d653fca24387b5996285f45f0fef2906cb2c9)
 
 
 # Reference
