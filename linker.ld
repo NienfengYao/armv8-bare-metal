@@ -1,12 +1,40 @@
 ENTRY(_start)
+
+STACKTOP = 0x41000000;
+
 SECTIONS
 {
+	/* Starts at LOADER_ADDR. */
 	. = 0x40000000;
-	/* .startup . : { startup64.o(.text) } */
-	.text : { *(.text) }
-	.data : { *(.data) }
-	.bss : { *(.bss COMMON) }
-	. = ALIGN(8);
-	. = . + 0x1000; /* 4kB of stack memory */
+	__start = .;
+	__text_start = .;
+	.text :
+	{
+	KEEP(*(.text.boot))
+	*(.text)
+	}
+	. = ALIGN(4096); /* align to page size */
+	__text_end = .;
+
+	__data_start = .;
+	.data :
+	{
+	*(.data)
+	}
+	. = ALIGN(4096); /* align to page size */
+	__data_end = .;
+
+	__bss_start = .;
+	.bss :
+	{
+	bss = .;
+	*(.bss)
+	}
+	. = ALIGN(4096); /* align to page size */
+	__bss_end = .;
+	__end = .;
+
+	. = STACKTOP ; /* stack memory */
 	stack_top = .;
 }
+__bss_size = (__bss_end - __bss_start)>>3;

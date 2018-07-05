@@ -1,4 +1,5 @@
-.text
+// To keep this in the first portion of the binary.
+.section ".text.boot"
 
 .global _start
 _start:
@@ -28,10 +29,10 @@ reset_vector_base:
 
 boot_cpu:
 	/* configure stack */
-	adrp	x0,	stack_top	// Address of 4KB page at a PC-relative offset
+	adrp	x0, stack_top	// Address of 4KB page at a PC-relative offset
 
 main_label:					// Why we need this label let GDB step into main()?
-	mov	sp, x0			// sp = stack_top (align with 4KB page)
+	mov	sp, x0				// sp = stack_top (align with 4KB page)
 	bl	main
 
 hang:
@@ -97,8 +98,7 @@ lower_el_aarch64_fiq:		// The exception handler for the FIQ exception
 
 .balign	0x80
 lower_el_aarch64_serror:	// The exception handler for the system error
-							// exception from a lower EL(AArch64).
-	//b	hang				// Have to mark this or the uart output isn't correct, Why?
+	b	hang				// exception from a lower EL(AArch64).
 
 .balign	0x80
 lower_el_aarch32_sync:		// The exception handler for the synchronous
