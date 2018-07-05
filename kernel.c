@@ -1,13 +1,17 @@
 #include <stdint.h>
 
+extern void enable_irq(void);
 
 /*
 *	UART
 */
 volatile unsigned int * const UART0DR = (unsigned int *) 0x09000000;
+volatile unsigned int * const UART0FR = (unsigned int *) 0x09000018;
 
 void uart_putc(const char c)
 {
+	// Wait for UART to become ready to transmit.
+	while ((*UART0FR) & (1 << 5)) { }
 	*UART0DR = c; /* Transmit char */
 }
 
@@ -25,25 +29,301 @@ void uart_puthex(uint64_t n)
 }
 
 void uart_puts(const char *s) {
+	for (int i = 0; s[i] != '\0'; i ++)
+		uart_putc((unsigned char)s[i]);
+}
+
+#if 0
+void uart_puts(const char *s) {
 	while(*s != '\0') { 		/* Loop until end of string */
 		*UART0DR = (unsigned char)(*s); /* Transmit char */
 		s++;			        /* Next char */
 	}
 }
+#endif
 
- 
+/*
+*	Basic
+*/
+uint32_t read_current_el(void)
+{
+/*
+CurrentEL, Current Exception Level
+
+EL, bits [3:2]
+	Current exception level. Possible values of this field are:
+	00 EL0
+	01 EL1
+	10 EL2
+	11 EL3
+*/
+	uint32_t val;
+
+	asm volatile ("mrs %0, CurrentEL" : "=r" (val));
+	return val;
+}
+
+uint32_t read_daif(void)
+{
+/* 
+DAIF, Interrupt Mask Bits
+	Allows access to the interrupt mask bits.
+
+D, bit [9]: Debug exceptions.
+A, bit [8]: SError (System Error) mask bit.
+I, bit [7]: IRQ mask bit.
+F, bit [6]: FIQ mask bit.
+
+value: 
+	0 Exception not masked.
+	1 Exception masked.
+*/
+	uint32_t val;
+
+	asm volatile ("mrs %0, daif" : "=r" (val));
+	return val;
+}
+
+uint32_t read_isr_el1(void)
+{
+/* 
+ISR_EL1, Interrupt Status Register
+	Shows whether an IRQ, FIQ, or SError interrupt is pending.
+*/
+	uint32_t val;
+
+	asm volatile ("mrs %0, isr_el1" : "=r" (val));
+	return val;
+}
+
+uint32_t read_spsr_el1(void)
+{
+/* 
+SPSR_EL1, Saved Program Status Register (EL1)
+	Holds the saved processor state when an exception is taken to EL1.
+*/
+	uint32_t val;
+
+	asm volatile ("mrs %0, spsr_el1" : "=r" (val));
+	return val;
+}
+
+uint32_t read_sctlr_el1(void)
+{
+/* 
+SCTLR_EL1, System Control Register (EL1)
+	Provides top level control of the system, including its memory system, at EL1.
+*/
+	uint32_t val;
+
+	asm volatile ("mrs %0, sctlr_el1" : "=r" (val));
+	return val;
+}
+
+#if 0
+uint32_t read_scr_el3(void)
+{
+/* 
+SCR_EL3, Secure Configuration Register
+	Defines the configuration of the current security state. It specifies:
+	• The security state of EL0 and EL1, either Secure or Non-secure.
+	• The register width at lower exception levels.
+	• Whether IRQ, FIQ, and External Abort interrupts are taken to EL3.
+*/
+	uint32_t val;
+
+	asm volatile ("mrs %0, scr_el3" : "=r" (val));
+	return val;
+}
+#endif
+
+static inline void io_halt(void)
+{
+/*
+Wait for Interrupt.
+*/
+	asm volatile ("wfi");
+}
+
+/*
+*	Timer
+*/  
+#define ARM_ARCH_TIMER_ENABLE			(1 << 0)
+#define ARM_ARCH_TIMER_IMASK			(1 << 1)
+#define ARM_ARCH_TIMER_ISTATUS			(1 << 2)
+
+uint32_t read_cntv_ctl(void)
+{
+/*
+CNTV_CTL_EL0, Counter-timer Virtual Timer Control register
+	Control register for the virtual timer.
+
+ISTATUS, bit [2]:	The status of the timer interrupt.
+IMASK, bit [1]:		Timer interrupt mask bit.
+ENABLE, bit [0]:	Enables the timer.
+*/
+	uint32_t val;
+
+	asm volatile ("mrs %0, cntv_ctl_el0" : "=r" (val));
+	return val;
+}
+
+void disable_cntv(void)
+{
+	uint32_t val;
+
+	val = read_cntv_ctl();
+	val &= ~ARM_ARCH_TIMER_ENABLE;
+	asm volatile ("msr cntv_ctl_el0, %0" :: "r" (val));
+}
+
+void enable_cntv(void)
+{
+	uint32_t val;
+
+	val = read_cntv_ctl();
+	val |= ARM_ARCH_TIMER_ENABLE;
+	asm volatile ("msr cntv_ctl_el0, %0" :: "r" (val));
+}
+
+uint32_t read_cntfrq(void)
+{
+/*
+CNTFRQ_EL0, Counter-timer Frequency register
+	Holds the clock frequency of the system counter.
+*/
+	uint32_t val;
+
+	asm volatile ("mrs %0, cntfrq_el0" : "=r" (val));
+	return val;
+}
+
+uint64_t read_cntvct(void)
+{
+/*
+CNTVCT_EL0, Counter-timer Virtual Count register
+	Holds the 64-bit virtual count value.
+*/
+	uint64_t val;
+	asm volatile ("mrs %0, cntvct_el0" : "=r" (val));
+	return val;
+}
+
+uint64_t read_cntv_cval(void)
+{
+/*
+CNTV_CVAL_EL0, Counter-timer Virtual Timer CompareValue register
+	Holds the compare value for the virtual timer.
+*/
+	uint64_t val;
+
+	asm volatile ("mrs %0, cntv_cval_el0" : "=r" (val));
+	return val;
+}
+
+void write_cntv_cval(uint64_t val)
+{
+	asm volatile ("msr cntv_cval_el0, %0" :: "r" (val));
+	return;
+}
+
+void irq_test()
+{
+    uart_puts("irq_test\n");
+}
+
+void timer_test(void)
+{
+	uint32_t cntfrq, val;
+	uint64_t ticks, current_cnt;
+
+    uart_puts("timer_test\n");
+
+    uart_puts("CurrentEL = ");
+	val = read_current_el();
+	uart_puthex(val);
+
+    uart_puts("\nDAIF = ");
+	val = read_daif();
+	uart_puthex(val);
+
+    uart_puts("\nCNTV_CTL_EL0 = ");
+	val = read_cntv_ctl();
+	uart_puthex(val);
+
+	// Disable the timer
+	disable_cntv();
+    uart_puts("\nDisable the timer, CNTV_CTL_EL0 = ");
+	val = read_cntv_ctl();
+	uart_puthex(val);
+    uart_puts("\nCNTFRQ_EL0 = ");
+	cntfrq = read_cntfrq();
+	uart_puthex(cntfrq);
+
+	// Next timer IRQ is after 1 sec.
+	ticks = cntfrq;
+	// Get value of the current timer
+	current_cnt = read_cntvct();
+    uart_puts("\nCNTVCT_EL0 = ");
+	uart_puthex(current_cnt);
+	// Set the interrupt in Current Time + TimerTick
+	write_cntv_cval(current_cnt + ticks);
+    uart_puts("\nSet it as next 1 sec, CNTV_CVAL_EL0 = ");
+	val = read_cntv_cval();
+	uart_puthex(val);
+
+	// Enable the timer
+	enable_cntv();
+    uart_puts("\nEnable the timer, CNTV_CTL_EL0 = ");
+	val = read_cntv_ctl();
+	uart_puthex(val);
+
+	// Enable IRQ 
+	enable_irq();
+    uart_puts("\nEnable IRQ, DAIF = ");
+	val = read_daif();
+	uart_puthex(val);
+    uart_puts("\n");
+
+#if 1 // Observe CNTP_CTL_EL0[2]: ISTATUS
+	while(1){
+		current_cnt = read_cntvct();
+		uart_puts("\nCNTVCT_EL0 = ");
+		uart_puthex(current_cnt);
+		val = read_cntv_ctl();
+		uart_puts(", CNTV_CTL_EL0 = ");
+		uart_puthex(val);
+		if ((val&0x4) != 0)		// Break if ISTATUS is 1
+			break;
+	}
+
+	val = read_spsr_el1();
+	uart_puts("\nSPSR_EL1 = ");
+	uart_puthex(val);
+
+	val = read_isr_el1();
+	uart_puts("\nISR_EL1 = ");
+	uart_puthex(val);
+
+	/*
+	val = read_sctlr_el1();
+	uart_puts("\nSCTLR_EL1 = ");
+	uart_puthex(val);
+	*/
+#endif
+
+	while(1){
+		// Wait for Interrupt.
+		io_halt();
+	}
+}
+
 /*
 *	Main
 */
 int main() {
-	uart_putc('A');
-	uart_putc('b');
-	uart_putc('\n');
-	uart_puthex(0xA);
-	uart_putc('\n');
-	uart_puthex(sizeof(uint64_t));
-	uart_putc('\n');
 	uart_puts("Hello world!\n");
+	timer_test();
 }
 
 

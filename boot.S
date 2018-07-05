@@ -13,7 +13,9 @@ _start:
  */
 reset_vector_base:
 /*
-	GDB hang if read vbar_el3/vbar_el2
+	GDB hang if read:
+		vbar_el3, vbar_el2
+		scr_el3, hcr_el2
 
 	ldr	x1, = vector_table_el3
 	msr	vbar_el3, x1
@@ -21,7 +23,6 @@ reset_vector_base:
 	ldr	x1, = vector_table_el2
 	msr	vbar_el2, x1
 */
-
 	ldr	x1, = vector_table_el1
 	msr	vbar_el1, x1
 
@@ -35,7 +36,20 @@ main_label:					// Why we need this label let GDB step into main()?
 
 hang:
 	wfi
-	b		hang
+	b	hang
+
+/*
+ * IRQ
+ */
+.globl enable_irq
+enable_irq:
+	msr	daifclr, #2
+	ret
+
+.globl disable_irq
+disable_irq:
+	msr	daifset, #2
+	ret
 
 /*
  * Exception vectors.
@@ -71,16 +85,21 @@ curr_el_spx_serror:			// The exception handler for the system error
 vector_table_el1:
 .balign	0x80
 lower_el_aarch64_sync:		// The exception handler for the synchronous
-							// exception from a lower EL (AArch64).
+	b	hang				// exception from a lower EL (AArch64).
+
 .balign	0x80
 lower_el_aarch64_irq:		// The exception handler for the IRQ exception
-							// from a lower EL (AArch64).
+	bl irq_test				// from a lower EL (AArch64).
+
 .balign	0x80
 lower_el_aarch64_fiq:		// The exception handler for the FIQ exception
-							// from a lower EL (AArch64).
+	b	hang				// from a lower EL (AArch64).
+
 .balign	0x80
 lower_el_aarch64_serror:	// The exception handler for the system error
 							// exception from a lower EL(AArch64).
+	//b	hang				// Have to mark this or the uart output isn't correct, Why?
+
 .balign	0x80
 lower_el_aarch32_sync:		// The exception handler for the synchronous
 							// exception from a lower EL(AArch32).

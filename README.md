@@ -11,6 +11,9 @@
 		target remote :1234
 	```
 
+# Questions
+*	GDB can't step into main() if miss lable: main_label in boot.S
+
 # Reference
 *	Project
 	*   [aarch64-bare-metal-qemu]( https://github.com/freedomtan/aarch64-bare-metal-qemu)
