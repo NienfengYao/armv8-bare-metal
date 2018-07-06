@@ -120,6 +120,32 @@ SCTLR_EL1, System Control Register (EL1)
 	return val;
 }
 
+uint32_t read_vbar_el1(void)
+{
+/* 
+VBAR_EL1, Vector Base Address Register (EL1)
+	Holds the exception base address for any exception that is taken to EL1.
+*/
+	uint32_t val;
+
+	asm volatile ("mrs %0, vbar_el1" : "=r" (val));
+	return val;
+}
+
+uint32_t read_rvbar_el1(void)
+{
+/* 
+RVBAR_EL1, Reset Vector Base Address Register (if EL2 and EL3 not implemented)
+	If EL1 is the highest exception level implemented, contains the 
+	IMPLEMENTATION DEFINED address that execution starts from after reset when
+	executing in AArch64 state.
+*/
+	uint32_t val;
+
+	asm volatile ("mrs %0, rvbar_el1" : "=r" (val));
+	return val;
+}
+
 #if 0
 uint32_t read_scr_el3(void)
 {
@@ -227,20 +253,44 @@ void write_cntv_cval(uint64_t val)
 	return;
 }
 
+void sync_test()
+{
+    uart_puts("sync_test\n");
+}
+
 void irq_test()
 {
     uart_puts("irq_test\n");
+}
+
+void fiq_test()
+{
+    uart_puts("fiq_test\n");
+}
+
+void serror_test()
+{
+    uart_puts("serror_test\n");
 }
 
 void timer_test(void)
 {
 	uint32_t cntfrq, val;
 	uint64_t ticks, current_cnt;
+	uint32_t tmp;
 
     uart_puts("timer_test\n");
 
     uart_puts("CurrentEL = ");
 	val = read_current_el();
+	uart_puthex(val);
+
+    uart_puts("\nRVBAR_EL1 = ");
+	val = read_rvbar_el1();
+	uart_puthex(val);
+
+    uart_puts("\nVBAR_EL1 = ");
+	val = read_vbar_el1();
 	uart_puthex(val);
 
     uart_puts("\nDAIF = ");
@@ -286,15 +336,25 @@ void timer_test(void)
     uart_puts("\n");
 
 #if 1 // Observe CNTP_CTL_EL0[2]: ISTATUS
+	tmp = 0;
 	while(1){
 		current_cnt = read_cntvct();
-		uart_puts("\nCNTVCT_EL0 = ");
-		uart_puthex(current_cnt);
 		val = read_cntv_ctl();
-		uart_puts(", CNTV_CTL_EL0 = ");
-		uart_puthex(val);
-		if ((val&0x4) != 0)		// Break if ISTATUS is 1
+		if (tmp <5){
+			uart_puts("\nCNTVCT_EL0 = ");
+			uart_puthex(current_cnt);
+			uart_puts(", CNTV_CTL_EL0 = ");
+			uart_puthex(val);
+			tmp++;
+		}
+
+		if ((val&0x4) != 0){	// Break if ISTATUS is 1
+			uart_puts("\nCNTVCT_EL0 = ");
+			uart_puthex(current_cnt);
+			uart_puts(", CNTV_CTL_EL0 = ");
+			uart_puthex(val);
 			break;
+		}
 	}
 
 	val = read_spsr_el1();

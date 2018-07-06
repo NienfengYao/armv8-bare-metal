@@ -58,57 +58,69 @@ disable_irq:
 .balign	0x800
 vector_table_el3:
 curr_el_sp0_sync:			// The exception handler for the synchronous
-							// exception from the current EL using SP0.
+	bl	sync_test			// exception from the current EL using SP0.
+
 .balign	0x80
 curr_el_sp0_irq:			// The exception handler for the IRQ exception
-							// from the current EL using SP0.
+	bl	irq_test			// from the current EL using SP0.
+
 .balign	0x80
 curr_el_sp0_fiq:			// The exception handler for the FIQ exception
-							// from the current EL using SP0.
+	bl	fiq_test			// from the current EL using SP0.
+
 .balign	0x80
 curr_el_sp0_serror:			// The exception handler for the system error
-							// exception from the current EL using SP0.
-vector_table_el2:
+	bl	serror_test			// exception from the current EL using SP0.
+
 .balign	0x80
+vector_table_el2:
 curr_el_spx_sync:			// The exception handler for the synchronous
-							// exception from the current EL using the
+	bl	sync_test			// exception from the current EL using the
 							// current SP.
+
 .balign	0x80
 curr_el_spx_irq:			// The exception handler for IRQ exception
-							// from the current EL using the current SP.
+	bl	irq_test			// from the current EL using the current SP.
+
 .balign	0x80
 curr_el_spx_fiq:			// The exception handler for the FIQ exception
-							// from the current EL using the current SP.
+	bl	fiq_test			// from the current EL using the current SP.
+
 .balign	0x80
 curr_el_spx_serror:			// The exception handler for the system error
-							// exception from the current EL using the
+	bl	serror_test			// exception from the current EL using the
 							// current SP.
-vector_table_el1:
+
 .balign	0x80
+vector_table_el1:
 lower_el_aarch64_sync:		// The exception handler for the synchronous
-	b	hang				// exception from a lower EL (AArch64).
+	bl	sync_test			// exception from a lower EL (AArch64).
 
 .balign	0x80
 lower_el_aarch64_irq:		// The exception handler for the IRQ exception
-	bl irq_test				// from a lower EL (AArch64).
+	bl	irq_test			// from a lower EL (AArch64).
 
 .balign	0x80
 lower_el_aarch64_fiq:		// The exception handler for the FIQ exception
-	b	hang				// from a lower EL (AArch64).
+	bl	fiq_test			// from a lower EL (AArch64).
 
 .balign	0x80
 lower_el_aarch64_serror:	// The exception handler for the system error
-	b	hang				// exception from a lower EL(AArch64).
+	bl	serror_test			// exception from a lower EL(AArch64).
 
 .balign	0x80
 lower_el_aarch32_sync:		// The exception handler for the synchronous
-							// exception from a lower EL(AArch32).
+	bl	sync_test			// exception from a lower EL(AArch32).
+
 .balign	0x80
 lower_el_aarch32_irq:		// The exception handler for the IRQ exception
-							// from a lower EL (AArch32).
+	bl	irq_test						// from a lower EL (AArch32).
+
 .balign	0x80
 lower_el_aarch32_fiq:		// The exception handler for the FIQ exception
-							// from a lower EL (AArch32).
+	bl	fiq_test			// from a lower EL (AArch32).
+
 .balign	0x80
 lower_el_aarch32_serror:	// The exception handler for the system error
-							// exception from a lower EL(AArch32).
+	bl	serror_test			// exception from a lower EL(AArch32).
+
