@@ -1,7 +1,12 @@
 # armv8-bare-metal
 *	Purpose
 	* It's a bare-metal study in QEMU (-M virt -cpu cortex-a57)
-
+*	How to run
+	```
+	# export PATH inclueding your cross compile tool
+	export PATH=$PATH:/home/ryanyao/work/buildroot-2017.11-rc1/output/host/bin
+	make run
+	```
 *	GDB (Terminal 1/2 should be in the same directory.)
 	```
 	Terminal 1:
