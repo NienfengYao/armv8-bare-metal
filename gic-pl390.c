@@ -301,7 +301,7 @@ static void gicd_enable_int(irq_no irq) {
 
 	#if RYAN_DEBUG //RyanYao
 	uart_puts("REG_GIC_GICD_ISENABLER: ");
-	uart_puthex(REG_GIC_GICD_ISENABLER( (irq / GIC_GICD_ISENABLER_PER_REG) ));
+	uart_puthex((GIC_GICD_ISENABLER( (irq / GIC_GICD_ISENABLER_PER_REG) )));
 	uart_puts(" = ");
 	val = *REG_GIC_GICD_ISENABLER( (irq / GIC_GICD_ISENABLER_PER_REG) );
 	uart_puthex(val);
