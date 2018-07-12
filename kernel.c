@@ -10,6 +10,15 @@ extern void enable_irq(void);
 /*
 *	Basic
 */
+void exception_svc(void)
+{
+/*
+Supervisor call to allow application code to call the OS. 
+	It generates an exception targeting exception level 1 (EL1).
+*/
+	asm("svc #0xdead");
+}
+
 uint32_t read_current_el(void)
 {
 /*
@@ -351,7 +360,9 @@ void timer_test(void)
 */
 int main() {
 	uart_puts("Hello world!\n");
-	timer_test();
+	exception_svc();
+	//asm("svc #0xdead\n\t");
+	//timer_test();
 }
 
 

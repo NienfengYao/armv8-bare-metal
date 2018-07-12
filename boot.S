@@ -1,7 +1,7 @@
 // To keep this in the first portion of the binary.
 .section ".text.boot"
 
-.global _start
+.globl _start
 _start:
 	/* check CPU ID = 0x0, or jump to hang */
 	mrs	x0, mpidr_el1
@@ -14,17 +14,11 @@ _start:
  */
 reset_vector_base:
 /*
-	GDB hang if read:
+	GDB hang if access:
 		vbar_el3, vbar_el2
 		scr_el3, hcr_el2
-
-	ldr	x1, = vector_table_el3
-	msr	vbar_el3, x1
-
-	ldr	x1, = vector_table_el2
-	msr	vbar_el2, x1
 */
-	ldr	x1, = vector_table_el1
+	ldr	x1, = vectors
 	msr	vbar_el1, x1
 
 boot_cpu:
@@ -56,7 +50,8 @@ disable_irq:
  * Exception vectors.
  */
 .balign	0x800
-vector_table_el3:
+.globl vectors
+vectors:
 curr_el_sp0_sync:			// The exception handler for the synchronous
 	bl	sync_test			// exception from the current EL using SP0.
 
@@ -73,7 +68,6 @@ curr_el_sp0_serror:			// The exception handler for the system error
 	bl	serror_test			// exception from the current EL using SP0.
 
 .balign	0x80
-vector_table_el2:
 curr_el_spx_sync:			// The exception handler for the synchronous
 	bl	sync_test			// exception from the current EL using the
 							// current SP.
@@ -92,7 +86,6 @@ curr_el_spx_serror:			// The exception handler for the system error
 							// current SP.
 
 .balign	0x80
-vector_table_el1:
 lower_el_aarch64_sync:		// The exception handler for the synchronous
 	bl	sync_test			// exception from a lower EL (AArch64).
 

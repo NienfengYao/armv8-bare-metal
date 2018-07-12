@@ -41,6 +41,7 @@ boot.o: boot.S
 run:
 	$(MAKE) kernel.elf
 	# qemu-system-aarch64 -machine virt -cpu cortex-a57 -m 128 -serial stdio -nographic -nodefaults -kernel kernel.elf
+	# qemu-system-aarch64 -machine virt,gic_version=3 -cpu cortex-a57 -nographic -kernel kernel.elf
 	qemu-system-aarch64 -machine virt -cpu cortex-a57 -nographic -kernel kernel.elf
 
 gen_tags:

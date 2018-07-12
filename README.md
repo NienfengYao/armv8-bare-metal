@@ -27,7 +27,9 @@
 
 # Reference
 *	Project
-	*   [aarch64-bare-metal-qemu]( https://github.com/freedomtan/aarch64-bare-metal-qemu)
+	*   [aarch64-bare-metal-qemu](https://github.com/freedomtan/aarch64-bare-metal-qemu)
+	*   [raspberrypi](https://github.com/eggman/raspberrypi)
+	*   [sample-tsk-sw](https://github.com/takeharukato/sample-tsk-sw)
 *   QEMU
 	*   [QEMU version 2.12.50 User Documentation](https://qemu.weilnetz.de/doc/qemu-doc.html)
 *   Makefile
@@ -35,4 +37,5 @@
 	*   [GNU 的連結工具 (ld, nm, objdump, ar)](http://sp1.wikidot.com/gnulinker)
 	*   [GCC Command-Line Options](http://tigcc.ticalc.org/doc/comopts.html)
 	*   [LD Index](https://sourceware.org/binutils/docs/ld/LD-Index.html#LD-Index)
-
+*	ARM
+	*	[Arm® Compiler armasm User Guide](http://www.keil.com/support/man/docs/armclang_asm/armclang_asm_chunk708094578.htm)
