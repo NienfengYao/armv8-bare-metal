@@ -309,7 +309,6 @@ static void gicd_enable_int(irq_no irq) {
 	#endif
 }
 
-#if 0 //RyanYao
 /** Clear a pending interrupt
     @param[in] irq IRQ number
  */
@@ -320,6 +319,7 @@ gicd_clear_pending(irq_no irq) {
 		1U << ( irq % GIC_GICD_ICPENDR_PER_REG );
 }
 
+#if 0 //RyanYao
 /** Set interrupt pending
     @param[in] irq IRQ number
  */
@@ -342,6 +342,7 @@ gicd_probe_pending(irq_no irq) {
 
 	return ( is_pending != 0 );
 }
+#endif
 
 /** Set an interrupt target processor
     @param[in] irq IRQ number
@@ -398,6 +399,7 @@ gicd_config(irq_no irq, unsigned int config){
 	*REG_GIC_GICD_ICFGR( irq / 16 ) = reg;
 }
 
+#if 0 //RyanYao
 /** Configure IRQ line for GIC
     @param[in] ctrlr   IRQ controller information
     @param[in] irq     IRQ number
@@ -464,8 +466,13 @@ gic_pl390_eoi(struct _irq_ctrlr *ctrlr __attribute__((unused)), irq_no irq) {
 void gic_pl390_initialize(void){
 
     uart_puts("gic_pl390_initialize\n");
+	/* Set trigger type for all peripheral interrupts level triggered */
 	init_gicd();
 	init_gicc();
+	gicd_config(27, GIC_GICD_ICFGR_EDGE);
+	gicd_set_priority(27, 0 << GIC_PRI_SHIFT );  /* Set priority */
+	gicd_set_target(27, 0x1);  /* processor 0 */
+	gicd_clear_pending(27);
 	gicd_enable_int(27);
 }
 #else

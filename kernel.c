@@ -360,9 +360,11 @@ void timer_test(void)
 */
 int main() {
 	uart_puts("Hello world!\n");
+	#if 0
+	/* Exception: SVC test, curr_el_spx_sync: should be called */
 	exception_svc();
-	//asm("svc #0xdead\n\t");
-	//timer_test();
+	#endif
+	timer_test();
 }
 
 
