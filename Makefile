@@ -22,7 +22,7 @@ CFLAGS =  -mcpu=cortex-a57 -Wall -Wextra -g
 
 ASM_FLAGS = -mcpu=cortex-a57 -g
 
-OBJS = boot.o kernel.o gic-pl390.o uart.o
+OBJS = boot.o vector.o exception.o kernel.o gic-pl390.o uart.o
 # OBJS = boot.o gic-pl390.o kernel.o
 
 
@@ -32,8 +32,10 @@ ${IMAGE}: linker.ld ${OBJS}
 	${LD} -T linker.ld $^ -o $@
 	${OBJDUMP} -D kernel.elf > kernel.list
 
-boot.o: boot.S
-	${AS} ${ASM_FLAGS} -c $< -o $@
+#boot.o: boot.S
+%.o: %.S
+	# ${AS} ${ASM_FLAGS} -c $< -o $@
+	$(CC) ${CFLAGS} -c $< -o $@			# for include header file in assembly
 
 %.o : %.c
 	$(CC) ${CFLAGS} -c $<

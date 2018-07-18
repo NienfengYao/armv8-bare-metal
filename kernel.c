@@ -358,13 +358,21 @@ void timer_test(void)
 /*
 *	Main
 */
-int main() {
-	uart_puts("Hello world!\n");
-	#if 0
-	/* Exception: SVC test, curr_el_spx_sync: should be called */
+void exception_svc_test(void)
+{
+	uart_puts("exception_svc_test... start\n");
+	/* SVC instruction causes a Supervisor Call exception. */ 
+	/* vector_table:_curr_el_spx_sync should be called */
 	exception_svc();
-	#endif
-	timer_test();
+
+	// Wait for Interrupt.
+	io_halt();
+	uart_puts("exception_svc_test... done\n");
+}
+
+int main() {
+	exception_svc_test();
+	//timer_test();
 }
 
 

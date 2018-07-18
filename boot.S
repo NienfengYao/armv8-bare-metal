@@ -1,3 +1,5 @@
+#define ASM_FILE   1
+
 // To keep this in the first portion of the binary.
 .section ".text.boot"
 
@@ -45,75 +47,4 @@ enable_irq:
 disable_irq:
 	msr	daifset, #2
 	ret
-
-/*
- * Exception vectors.
- */
-.balign	0x800
-.globl vectors
-vectors:
-curr_el_sp0_sync:			// The exception handler for the synchronous
-	bl	sync_test			// exception from the current EL using SP0.
-
-.balign	0x80
-curr_el_sp0_irq:			// The exception handler for the IRQ exception
-	bl	irq_test			// from the current EL using SP0.
-
-.balign	0x80
-curr_el_sp0_fiq:			// The exception handler for the FIQ exception
-	bl	fiq_test			// from the current EL using SP0.
-
-.balign	0x80
-curr_el_sp0_serror:			// The exception handler for the system error
-	bl	serror_test			// exception from the current EL using SP0.
-
-.balign	0x80
-curr_el_spx_sync:			// The exception handler for the synchronous
-	bl	sync_test			// exception from the current EL using the
-							// current SP.
-
-.balign	0x80
-curr_el_spx_irq:			// The exception handler for IRQ exception
-	bl	irq_test			// from the current EL using the current SP.
-
-.balign	0x80
-curr_el_spx_fiq:			// The exception handler for the FIQ exception
-	bl	fiq_test			// from the current EL using the current SP.
-
-.balign	0x80
-curr_el_spx_serror:			// The exception handler for the system error
-	bl	serror_test			// exception from the current EL using the
-							// current SP.
-
-.balign	0x80
-lower_el_aarch64_sync:		// The exception handler for the synchronous
-	bl	sync_test			// exception from a lower EL (AArch64).
-
-.balign	0x80
-lower_el_aarch64_irq:		// The exception handler for the IRQ exception
-	bl	irq_test			// from a lower EL (AArch64).
-
-.balign	0x80
-lower_el_aarch64_fiq:		// The exception handler for the FIQ exception
-	bl	fiq_test			// from a lower EL (AArch64).
-
-.balign	0x80
-lower_el_aarch64_serror:	// The exception handler for the system error
-	bl	serror_test			// exception from a lower EL(AArch64).
-
-.balign	0x80
-lower_el_aarch32_sync:		// The exception handler for the synchronous
-	bl	sync_test			// exception from a lower EL(AArch32).
-
-.balign	0x80
-lower_el_aarch32_irq:		// The exception handler for the IRQ exception
-	bl	irq_test						// from a lower EL (AArch32).
-
-.balign	0x80
-lower_el_aarch32_fiq:		// The exception handler for the FIQ exception
-	bl	fiq_test			// from a lower EL (AArch32).
-
-.balign	0x80
-lower_el_aarch32_serror:	// The exception handler for the system error
-	bl	serror_test			// exception from a lower EL(AArch32).
 
