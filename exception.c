@@ -9,12 +9,16 @@
 
 #include "exception.h"
 #include "uart.h"
+#include "psw.h"
+#include "board.h"
+#include "gic-pl390.h"
 
 #if 0 //RyanYao
 #include <kern/kernel.h>
 
 #include <hal/exception.h>
 #endif
+extern void timer_set_secs(uint32_t secs);
 
 void handle_exception(exception_frame *exc) {
 	uart_puts("An exception occur:\n");
@@ -57,7 +61,36 @@ void handle_exception(exception_frame *exc) {
 	uart_puts(" x30: "); uart_puthex(exc->x30);
 }
 
-void common_trap_handler(exception_frame *exc){
+void irq_handle(exception_frame *exc)
+{
+	psw_t psw;
+	irq_no irq;
+	int rc;
+
+	uart_puts("irq_handle!\n");
+	psw_disable_and_save_interrupt(&psw);
+	rc = gic_pl390_find_pending_irq(exc, &irq);
+	if ( rc != IRQ_FOUND )  {
+		uart_puts("IRQ not found!\n");
+		goto restore_irq_out;
+	}else{
+		uart_puts("IRQ found: ");
+		uart_puthex(irq);
+		uart_puts("\n");
+	}
+	gicd_disable_int(irq);			/* Mask this irq */
+	gic_pl390_eoi(irq);				/* Send EOI for this irq line */
+
+	// Timer handler should be here
+	timer_set_secs(1);
+
+	gicd_enable_int(irq);			/* unmask this irq line */
+restore_irq_out:
+	psw_restore_interrupt(&psw);
+}
+
+void common_trap_handler(exception_frame *exc)
+{
 	uart_puts("common_trap_handler!\n");
 	//handle_exception(exc);
 	//thread_info_t *ti;
@@ -72,6 +105,11 @@ void common_trap_handler(exception_frame *exc){
 		psw_disable_interrupt();
 		ti_update_preempt_count(ti, THR_EXCCNT_SHIFT, -1);
 */
+	}
+
+	if ( ( exc->exc_type & 0xff ) == AARCH64_EXC_IRQ_SPX) {
+		uart_puts("AARCH64_EXC_IRQ_SPX\n");
+		irq_handle(exc);
 	}
 
 #if 0 //RyanYao

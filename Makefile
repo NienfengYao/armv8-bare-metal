@@ -22,7 +22,7 @@ CFLAGS =  -mcpu=cortex-a57 -Wall -Wextra -g
 
 ASM_FLAGS = -mcpu=cortex-a57 -g
 
-OBJS = boot.o vector.o exception.o kernel.o gic-pl390.o uart.o
+OBJS = boot.o vector.o exception.o kernel.o gic-pl390.o uart.o psw.o
 # OBJS = boot.o gic-pl390.o kernel.o
 
 

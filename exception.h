@@ -36,6 +36,13 @@
 #define text_align .align  2            /* Text alignment */
 #endif /* ASM_FILE */
 
+
+/*
+ * IRQ
+ */
+#define IRQ_FOUND          (0)
+#define IRQ_NOT_FOUND      (1)
+
 #if !defined(ASM_FILE)
 #include <stdint.h>
 typedef struct _exception_frame{

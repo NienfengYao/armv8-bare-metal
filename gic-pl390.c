@@ -16,6 +16,7 @@
 
 #include <stdint.h>
 #include "board.h"
+#include "exception.h"
 #include "gic-pl390.h"
 #include "uart.h"
 
@@ -278,22 +279,20 @@ finalize_gicd(void) {
 	 */
 	*REG_GIC_GICD_CTLR = GIC_GICD_CTLR_DISABLE;
 }
+#endif
 
 /** Disable IRQ
     @param[in] irq IRQ number
  */
-static void
-gicd_disable_int(irq_no irq) {
-
+void gicd_disable_int(irq_no irq) {
 	*REG_GIC_GICD_ICENABLER( (irq / GIC_GICD_ICENABLER_PER_REG) ) = 
 		1U << ( irq % GIC_GICD_ICENABLER_PER_REG );
 }
-#endif
 
 /** Enable IRQ
     @param[in] irq IRQ number
  */
-static void gicd_enable_int(irq_no irq) {
+void gicd_enable_int(irq_no irq) {
 	uint32_t val;
 
 	*REG_GIC_GICD_ISENABLER( (irq / GIC_GICD_ISENABLER_PER_REG) ) =
@@ -312,8 +311,7 @@ static void gicd_enable_int(irq_no irq) {
 /** Clear a pending interrupt
     @param[in] irq IRQ number
  */
-static void
-gicd_clear_pending(irq_no irq) {
+void gicd_clear_pending(irq_no irq) {
 
 	*REG_GIC_GICD_ICPENDR( (irq / GIC_GICD_ICPENDR_PER_REG) ) = 
 		1U << ( irq % GIC_GICD_ICPENDR_PER_REG );
@@ -329,12 +327,12 @@ gicd_set_pending(irq_no irq) {
 	*REG_GIC_GICD_ISPENDR( (irq / GIC_GICD_ISPENDR_PER_REG) ) =
 		1U << ( irq % GIC_GICD_ISPENDR_PER_REG );
 }
+#endif
 
 /** Probe pending interrupt
     @param[in] irq IRQ number
  */
-static int
-gicd_probe_pending(irq_no irq) {
+static int gicd_probe_pending(irq_no irq) {
 	int is_pending;
 
 	is_pending = ( *REG_GIC_GICD_ISPENDR( (irq / GIC_GICD_ISPENDR_PER_REG) ) &
@@ -342,7 +340,6 @@ gicd_probe_pending(irq_no irq) {
 
 	return ( is_pending != 0 );
 }
-#endif
 
 /** Set an interrupt target processor
     @param[in] irq IRQ number
@@ -437,27 +434,29 @@ gic_pl390_enable_irq(struct _irq_ctrlr *ctrlr __attribute__((unused)), irq_no ir
 
 	gicd_enable_int(irq);
 }
+#endif //RyanYao
+
 
 /** Disable IRQ line for GIC
     @param[in] ctrlr   IRQ controller information
     @param[in] irq     IRQ number
  */
+
+#if 0 //RyanYao
 static void
 gic_pl390_disable_irq(struct _irq_ctrlr *ctrlr __attribute__((unused)), irq_no irq) {
 
 	gicd_disable_int(irq);
 }
+#endif
 
 /** Send End of Interrupt to IRQ line for GIC
     @param[in] ctrlr   IRQ controller information
     @param[in] irq     IRQ number
  */
-static void
-gic_pl390_eoi(struct _irq_ctrlr *ctrlr __attribute__((unused)), irq_no irq) {
-
+void gic_pl390_eoi(irq_no irq) {
 	gicd_clear_pending(irq);
 }
-#endif
 
 /** Initialize GIC IRQ controller
     @param[in] ctrlr   IRQ controller information
@@ -496,16 +495,15 @@ gic_pl390_finalize(struct _irq_ctrlr *ctrlr){
 	finalize_gicd();
 	ctrlr->private = NULL;
 }
+#endif
 
 /** Find pending IRQ
     @param[in]     exc  An exception frame
     @param[in,out] irqp An IRQ number to be processed
  */
-static int
-gic_pl390_find_pending_irq(struct _exception_frame *exc __attribute__((unused)), irq_no *irqp) {
+int gic_pl390_find_pending_irq(struct _exception_frame *exc __attribute__((unused)), irq_no *irqp) {
 	int   rc;
 	irq_no i;
-
 	for( i = 0; GIC_INT_MAX > i; ++i) {
 		if ( gicd_probe_pending(i) ) {
 
@@ -520,7 +518,7 @@ found:
 	return rc;
 }
 
-
+#if 0 //RyanYao
 int 
 test_handler(irq_no irq, struct _exception_frame *exc, void *private __attribute__((unused))){
 

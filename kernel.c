@@ -7,6 +7,8 @@
 extern void enable_irq(void);
 
 
+static uint32_t cntfrq;
+
 /*
 *	Basic
 */
@@ -247,9 +249,48 @@ void serror_test()
     uart_puts("serror_test\n");
 }
 
+
+void timer_set_secs(uint32_t secs)
+{
+	uint64_t ticks, current_cnt;
+	uint32_t val;
+
+    uart_puts("timer_set_secs\n");
+
+	// Disable the timer
+	disable_cntv();
+	gicd_clear_pending(27);
+    uart_puts("\nDisable the timer, CNTV_CTL_EL0 = ");
+	val = read_cntv_ctl();
+	uart_puthex(val);
+    uart_puts("\nCNTFRQ_EL0 = ");
+	//cntfrq = read_cntfrq();
+	uart_puthex(cntfrq);
+
+	// Next timer IRQ is after 1 sec.
+	ticks = secs * cntfrq;
+	// Get value of the current timer
+	current_cnt = read_cntvct();
+    uart_puts("\nCNTVCT_EL0 = ");
+	uart_puthex(current_cnt);
+	// Set the interrupt in Current Time + TimerTick
+	write_cntv_cval(current_cnt + ticks);
+    uart_puts("\nSet it as next 1 sec, CNTV_CVAL_EL0 = ");
+	val = read_cntv_cval();
+	uart_puthex(val);
+
+	// Enable the timer
+	enable_cntv();
+    uart_puts("\nEnable the timer, CNTV_CTL_EL0 = ");
+	val = read_cntv_ctl();
+	uart_puthex(val);
+
+}
+
 void timer_test(void)
 {
-	uint32_t cntfrq, val;
+	//uint32_t cntfrq, val;
+	uint32_t val;
 	uint64_t ticks, current_cnt;
 	uint32_t tmp;
 
@@ -371,8 +412,8 @@ void exception_svc_test(void)
 }
 
 int main() {
-	exception_svc_test();
-	//timer_test();
+	//exception_svc_test();
+	timer_test();
 }
 
 

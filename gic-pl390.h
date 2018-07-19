@@ -9,9 +9,11 @@
 #if !defined(_HAL_GIC_PL390_H)
 #define  _HAL_GIC_PL390_H 
 
-#if !defined( _HAL_BOARD_H)
+#if !defined(_BOARD_H)
 #error "Include hal/board.h before this header file."
-#endif  /*   !_HAL_BOARD_H  */
+#endif  /* !_BOARD_H */
+
+#include "exception.h"
 
 typedef int32_t            irq_no;  /*< IRQ no                       */
 
@@ -180,6 +182,11 @@ typedef int32_t            irq_no;  /*< IRQ no                       */
 #if 1 //Ryan
 //static void gic_pl390_initialize(void);
 void gic_pl390_initialize(void);
+int gic_pl390_find_pending_irq(struct _exception_frame *exc __attribute__((unused)), irq_no *irqp);
+void gicd_disable_int(irq_no irq);
+void gic_pl390_eoi(irq_no irq);
+void gicd_enable_int(irq_no irq);
+void gicd_clear_pending(irq_no irq);
 #else
 static int gic_pl390_config_irq(struct _irq_ctrlr *_ctrlr, 
     irq_no _irq, irq_attr _attr, irq_prio _prio);
