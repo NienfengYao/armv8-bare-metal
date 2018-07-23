@@ -11,14 +11,9 @@
 #include "uart.h"
 #include "psw.h"
 #include "board.h"
-#include "gic-pl390.h"
+#include "gic_v3.h"
 
-#if 0 //RyanYao
-#include <kern/kernel.h>
-
-#include <hal/exception.h>
-#endif
-extern void timer_set_secs(uint32_t secs);
+extern void timer_handler(void);
 
 void handle_exception(exception_frame *exc) {
 	uart_puts("An exception occur:\n");
@@ -67,9 +62,8 @@ void irq_handle(exception_frame *exc)
 	irq_no irq;
 	int rc;
 
-	uart_puts("irq_handle!\n");
 	psw_disable_and_save_interrupt(&psw);
-	rc = gic_pl390_find_pending_irq(exc, &irq);
+	rc = gic_v3_find_pending_irq(exc, &irq);
 	if ( rc != IRQ_FOUND )  {
 		uart_puts("IRQ not found!\n");
 		goto restore_irq_out;
@@ -79,24 +73,21 @@ void irq_handle(exception_frame *exc)
 		uart_puts("\n");
 	}
 	gicd_disable_int(irq);			/* Mask this irq */
-	gic_pl390_eoi(irq);				/* Send EOI for this irq line */
-
-	// Timer handler should be here
-	timer_set_secs(1);
-
+	gic_v3_eoi(irq);				/* Send EOI for this irq line */
+	timer_handler();
 	gicd_enable_int(irq);			/* unmask this irq line */
+
 restore_irq_out:
 	psw_restore_interrupt(&psw);
 }
 
 void common_trap_handler(exception_frame *exc)
 {
-	uart_puts("common_trap_handler!\n");
+	uart_puts("\nException Handler! (");
 	//handle_exception(exc);
-	//thread_info_t *ti;
 
 	if ( ( exc->exc_type & 0xff ) == AARCH64_EXC_SYNC_SPX ) {
-		uart_puts("AARCH64_EXC_SYNC_SPX\n");
+		uart_puts("AARCH64_EXC_SYNC_SPX)\n");
 		handle_exception(exc);
 /*
 		ti_update_preempt_count(ti, THR_EXCCNT_SHIFT, 1);
@@ -108,21 +99,9 @@ void common_trap_handler(exception_frame *exc)
 	}
 
 	if ( ( exc->exc_type & 0xff ) == AARCH64_EXC_IRQ_SPX) {
-		uart_puts("AARCH64_EXC_IRQ_SPX\n");
+		uart_puts("AARCH64_EXC_IRQ_SPX)\n");
 		irq_handle(exc);
 	}
-
-#if 0 //RyanYao
-	if ( ( exc->exc_type & 0xf ) == 0x2 ) {
-
-		ti_update_preempt_count(ti, THR_IRQCNT_SHIFT, 1);
-		irq_handle_irq(exc);
-		ti_update_preempt_count(ti, THR_IRQCNT_SHIFT, -1);
-	}
-
-	sched_delay_disptach();  /*  遅延ディスパッチ  */
-#endif
-
 	return;
 }
 

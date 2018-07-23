@@ -8,34 +8,10 @@
 /************************************************************************/
 #define ASM_FILE   1
 
-#if 0 //RyanYao
-#include <hal/aarch64.h>
-#include <hal/exception.h>
-#include <hal/asm-offset.h>
-#else
 #include "exception.h"
-#endif
-
-#if 1 //RyanYao test
-
-#include "exception.h"
-
-#define TI_SIZE (32) /* sizeof(struct _thread_info) */
-#define TI_PREEMPT_OFFSET (0) /* __asm_offsetof(struct _thread_info, preempt) */
-#define TI_MAGIC_OFFSET (24) /* __asm_offsetof(struct _thread_info, magic) */
-#define EXC_FRAME_SIZE (288) /* sizeof(struct _exception_frame) */
-#define EXC_EXC_TYPE_OFFSET (0) /* __asm_offsetof(struct _exception_frame, exc_type) */
-#define EXC_EXC_ESR_OFFSET (8) /* __asm_offsetof(struct _exception_frame, exc_esr) */
-#define EXC_EXC_SP_OFFSET (16) /* __asm_offsetof(struct _exception_frame, exc_sp) */
-#define EXC_EXC_ELR_OFFSET (24) /* __asm_offsetof(struct _exception_frame, exc_elr) */
-#define EXC_EXC_SPSR_OFFSET (32) /* __asm_offsetof(struct _exception_frame, exc_spsr) */
-#endif
-
 
 .section ".text.boot"
 
-.extern hal_common_trap_handler
-	
 .macro build_trapframe exc_type
 	/*
 	 * store generic registers from (x29,x30) pair to (x1,x2) pair.
@@ -134,9 +110,9 @@
 	eret
 .endm
 	
-/*
- * Exception vectors.
- */
+	/*
+	 * Exception vectors.
+	 */
 	vector_table_align
 	.globl vectors
 vectors:
@@ -221,61 +197,13 @@ _curr_el_sp0_serror:
 	restore_traped_sp
 	restore_trapframe
 
+
 	text_align
 _curr_el_spx_sync:
 	build_trapframe AARCH64_EXC_SYNC_SPX
 	store_nested_sp
 	call_common_trap_handler
 	restore_trapframe
-
-#if 0 //RyanYao
-	text_align
-_curr_el_spx_sync:
-	/*
-	 * store generic registers from (x29,x30) pair to (x1,x2) pair.
-	 */
-faaf
-	stp	x29, x30, [sp, #-16]!
-	stp	x27, x28, [sp, #-16]!
-	stp	x25, x26, [sp, #-16]!
-	stp	x23, x24, [sp, #-16]!
-	stp	x21, x22, [sp, #-16]!
-	stp	x19, x20, [sp, #-16]!
-	stp	x17, x18, [sp, #-16]!
-	stp	x15, x16, [sp, #-16]!
-	stp	x13, x14, [sp, #-16]!
-	stp	x11, x12, [sp, #-16]!
-	stp	x9, x10, [sp, #-16]!
-	stp	x7, x8, [sp, #-16]!
-	stp	x5, x6, [sp, #-16]!
-	stp	x3, x4, [sp, #-16]!
-	stp	x1, x2, [sp, #-16]!
-	/*
-	 * Store (spsr, x0)
-	 */
-	mrs	x21, spsr_el1
-	stp	x21, x0, [sp, #-16]!
-	/*
-	 * Allocate a room for sp_el0 and store elr
-	 */
-	mrs	x21, elr_el1
-	stp	xzr, x21, [sp, #-16]!
-	/*
-	 * store exception type and esr
-	 */
-	mov	x21, #(AARCH64_EXC_SYNC_SPX)
-	mrs	x22, esr_el1
-	stp	x21, x22, [sp, #-16]!
-
-	//store_nested_sp
-
-	mov	x21, sp 	
-	add	x21, x21, #EXC_FRAME_SIZE
-	str	x21, [sp, #EXC_EXC_SP_OFFSET]
-
-	call_common_trap_handler
-	restore_trapframe
-#endif //RyanYao
 
 	text_align
 _curr_el_spx_irq:
@@ -297,7 +225,7 @@ _curr_el_spx_serror:
 	store_nested_sp
 	call_common_trap_handler
 	restore_trapframe
-	
+
 
 	text_align
 _lower_el_aarch64_sync:
@@ -364,11 +292,3 @@ _lower_el_aarch32_serror:
 	restore_traped_sp
 	restore_trapframe
 
-/* RyanYao
-	text_align
- 	.globl	aarch64_setup_vector
-aarch64_setup_vector:	
-	ldr x0, =vectors
-	msr vbar_el1, x0
-	ret
-*/

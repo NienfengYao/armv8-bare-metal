@@ -29,11 +29,3 @@ void uart_puts(const char *s) {
 		uart_putc((unsigned char)s[i]);
 }
 
-#if 0
-void uart_puts(const char *s) {
-	while(*s != '\0') { 		/* Loop until end of string */
-		*UART0DR = (unsigned char)(*s); /* Transmit char */
-		s++;			        /* Next char */
-	}
-}
-#endif

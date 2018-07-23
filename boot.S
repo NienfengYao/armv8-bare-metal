@@ -1,9 +1,7 @@
 #define ASM_FILE   1
 
-// To keep this in the first portion of the binary.
-.section ".text.boot"
 
-.globl _start
+	.globl _start
 _start:
 	/* check CPU ID = 0x0, or jump to hang */
 	mrs	x0, mpidr_el1
@@ -11,15 +9,15 @@ _start:
 	cmp	x0, #0
 	bne	hang
 
-/*
- * Reset Vector Base Address,
- */
+	/*
+	 * Reset Vector Base Address,
+	 */
 reset_vector_base:
-/*
-	GDB hang if access:
-		vbar_el3, vbar_el2
-		scr_el3, hcr_el2
-*/
+	/*
+		GDB hang if access:
+			vbar_el3, vbar_el2
+			scr_el3, hcr_el2
+	*/
 	ldr	x1, = vectors
 	msr	vbar_el1, x1
 
@@ -34,17 +32,4 @@ main_label:					// Why we need this label let GDB step into main()?
 hang:
 	wfi
 	b	hang
-
-/*
- * IRQ
- */
-.globl enable_irq
-enable_irq:
-	msr	daifclr, #2
-	ret
-
-.globl disable_irq
-disable_irq:
-	msr	daifset, #2
-	ret
 
