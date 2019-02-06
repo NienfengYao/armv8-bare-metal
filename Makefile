@@ -10,7 +10,7 @@ CC = ${CROSS}-gcc
 AS = ${CROSS}-as
 LD = ${CROSS}-ld
 OBJDUMP = ${CROSS}-objdump
-CFLAGS =  -mcpu=cortex-a57 -Wall -Wextra -g
+CFLAGS =  -mcpu=cortex-a57 -Wall -Wextra -g -nostdlib
 #	-mcpu=name
 #		Specify the name of the target processor
 #	-Wall
