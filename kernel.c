@@ -25,12 +25,11 @@ void exception_svc_test(void)
 	exception_svc();
 
 	// Wait for Interrupt.
-	wfi();
 	uart_puts("exception_svc_test... done\n");
 }
 
 int main(void) {
-	//exception_svc_test();
+	exception_svc_test();
 	timer_test();
 }
 
